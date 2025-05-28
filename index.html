@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MenoHello Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #ffe9e5;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .quiz-container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+    .question {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .choices button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border: 2px solid #ffa798;
+      background-color: #fff;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .choices button:hover {
+      background-color: #ffd2cb;
+    }
+    .feedback {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    .explanation {
+      margin-top: 0.5rem;
+      font-weight: normal;
+    }
+    .next-button {
+      margin-top: 1.5rem;
+      display: none;
+      background-color: white;
+      color: black;
+      padding: 10px 20px;
+      border: 2px solid black;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .email-form {
+      display: none;
+      margin-top: 2rem;
+    }
+    .email-form input {
+      padding: 10px;
+      width: 100%;
+      border: 2px solid #ffa798;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    .email-form button {
+      background-color: black;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div id="quiz">
+      <div class="question" id="question"></div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="explanation" id="explanation"></div>
+      <button class="next-button" id="nextBtn">Next Question</button>
+    </div>
+    <div class="email-form" id="emailForm">
+      <p>Thanks for taking the quiz! We’re here to support you every step of the way.</p>
+      <input type="email" placeholder="Enter your email to get more MenoHello wisdom" />
+      <button type="submit">Submit</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Can your estrogen levels start to fluctuate years before your period actually stops?",
+        choices: ["Yes", "No"],
+        correctAnswer: "Yes",
+        explanation: "Perimenopause often begins in your 40s, but some women notice symptoms as early as their mid-30s. Estrogen doesn't gradually taper off—it fluctuates unpredictably, triggering symptoms long before menstruation ends."
+      },
+      {
+        question: "What causes sudden insomnia during perimenopause?",
+        choices: [
+          "A drop in estrogen and progesterone",
+          "Caffeine consumption only",
+          "Aging in general",
+          "Too much screen time before bed"
+        ],
+        correctAnswer: "A drop in estrogen and progesterone",
+        explanation: "Fluctuating hormones—especially estrogen and progesterone—interfere with melatonin production and your body’s ability to regulate temperature. These disruptions are a major cause of new or worsening insomnia during perimenopause."
+      },
+      {
+        question: "Can sudden bouts of anxiety or rage be linked to perimenopause?",
+        choices: ["Yes", "No"],
+        correctAnswer: "Yes",
+        explanation: "Estrogen helps regulate mood by influencing serotonin, dopamine, and other brain chemicals. During perimenopause, extreme hormonal fluctuations can trigger intense emotional responses, including panic, anger, or weepiness, seemingly out of nowhere."
+      }
+    ];
+
+    const wrongMessages = [
+      "A good guess! This journey is all about learning something new.",
+      "Close! Menopause is full of surprises, right?",
+      "That one’s tricky—now you’ve got a new insight under your belt!",
+      "Great effort. These things aren’t always common knowledge.",
+      "Almost! You're building your menopause muscle with every click.",
+      "Not this time, but your curiosity is the real win here.",
+      "Learning something new is the whole point—keep going!",
+      "You're in good company—most people miss this one!",
+      "Oops, not quite—but you’re well on your way to becoming menopause-wise.",
+      "You’re doing great. Sometimes the answers are unexpected!",
+      "Good try! Now you’ve got a fact most people don’t even know.",
+      "Menopause is a maze—thanks for staying curious as we navigate it.",
+      "Wrong? Maybe. Empowered by new knowledge? Definitely.",
+      "No worries—every misstep is one step closer to understanding more.",
+      "Not quite—but your Hormonal IQ is rising by the second!"
+    ];
+
+    const rightMessages = [
+      "Yes! Look at you, menopause master-in-the-making!",
+      "Correct—and now you’ve got the knowledge and the power.",
+      "You nailed it. Science meets savvy!",
+      "Boom! Someone’s done their homework—or just has great instincts.",
+      "That’s right! You’re seriously in sync with your hormones.",
+      "Well done! You’re ahead of the curve—and most OB/GYNs.",
+      "Gold star for you. Your brain’s definitely not foggy!",
+      "That’s a win—and proof you’re more tuned in than you think.",
+      "Love that confidence—it paid off!",
+      "Correct! See? You’ve got this midlife thing handled.",
+      "Way to go! That one trips a lot of people up.",
+      "Yup! Knowledge is hot—and so are you.",
+      "Correct—and clearly, you’re in your empowered era.",
+      "You're crushing this—seriously impressive."
+    ];
+
+    let currentQuestion = 0;
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("question").textContent = q.question;
+      const choicesDiv = document.getElementById("choices");
+      choicesDiv.innerHTML = "";
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("explanation").textContent = "";
+      document.getElementById("nextBtn").style.display = "none";
+      q.choices.forEach(choice => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.onclick = () => handleAnswer(choice);
+        choicesDiv.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(choice) {
+      const q = questions[currentQuestion];
+      const feedback = document.getElementById("feedback");
+      const explanation = document.getElementById("explanation");
+      if (choice === q.correctAnswer) {
+        feedback.textContent = "Correct! " + rightMessages[Math.floor(Math.random() * rightMessages.length)];
+      } else {
+        feedback.textContent = "Incorrect. " + wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
+      }
+      explanation.textContent = q.explanation;
+      document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    document.getElementById("nextBtn").onclick = () => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        document.getElementById("quiz").style.display = "none";
+        document.getElementById("emailForm").style.display = "block";
+      }
+    };
+
+    showQuestion();
+  </script>
+</body>
+</html>
