@@ -12,7 +12,7 @@
       background-color: #ffe9e5;
     }
     .quiz-container {
-             max-width: 700px;
+      max-width: 700px;
       margin: 40px auto;
       padding: 20px;
       background-color: white;
@@ -35,9 +35,23 @@
       color: black;
       cursor: pointer;
       transition: background-color 0.3s;
+      font-family: 'Poppins', sans-serif; /* Added this line */
     }
     .answers button:hover {
       background-color: #ffd2cb;
+    }
+    .answers button:disabled { /* Style for disabled buttons */
+      cursor: not-allowed;
+      opacity: 0.6;
+      background-color: #ccc; /* A neutral color when disabled */
+    }
+    .answers button.correct-answer { /* Style for correct answer */
+      background-color: #8bc34a; /* Green */
+      color: white;
+    }
+    .answers button.wrong-answer { /* Style for wrong answer */
+      background-color: #f44336; /* Red */
+      color: white;
     }
     .feedback {
       margin: 20px 0;
@@ -51,6 +65,7 @@
       font-size: 1em;
       cursor: pointer;
       border-radius: 10px;
+      font-family: 'Poppins', sans-serif; /* Added this line */
     }
     .final-screen {
       text-align: center;
@@ -63,6 +78,7 @@
       margin-top: 10px;
       cursor: pointer;
       border-radius: 10px;
+      font-family: 'Poppins', sans-serif; /* Added this line */
     }
     .copied {
       color: green;
@@ -111,7 +127,7 @@
       },
       {
         category: "Lesser-Known Symptoms",
-        question: "What causes some women to experience crawling skin sensations (formication) during peri/menopause?",
+        question: "What causes some women to experience phantom smells (formication) during peri/menopause?",
         type: "multiple",
         options: [
           "Allergic reactions",
@@ -122,13 +138,7 @@
         correct: "Estrogen affecting nerve endings",
         explanation: "Formication is the feeling of bugs crawling on your skin—often with no visible cause. It’s linked to declining estrogen, which can cause nerves in the skin to misfire, especially during perimenopause or menopause."
       },
-      {
-        category: "Temperature Regulation",
-        question: "Do hot flashes only happen during the day?",
-        type: "boolean",
-        correct: "No",
-        explanation: "Night sweats are nocturnal hot flashes caused by hormone-triggered misfires in the hypothalamus, your body’s thermostat. These episodes can soak your sheets and disrupt your sleep multiple times a night."
-      },
+     
       {
         category: "Skin, Hair & Nails",
         question: "What causes dry skin, thinning hair, and brittle nails during menopause?",
@@ -159,7 +169,7 @@
           "Poor hygiene",
           "New sexual partners"
         ],
-        correct: "Declining estrogen levels",
+        correct: "Declining estrogen levels that thin and weaken urinary tissues",
         explanation: "Estrogen helps maintain the thickness and pH balance of the vaginal and urinary tract lining. When levels fall, these tissues become more fragile, making it easier for bacteria to cause infection—even without any changes in hygiene or habits."
       },
       {
@@ -213,16 +223,50 @@
       "Not quite—but your Hormonal IQ is rising by the second!"
     ];
 
+    // Score-based comments for the final screen
+    const scoreComments = {
+      "10/10": [
+        "Did you write this quiz? Because you absolutely aced it! You're a true menopause maven. Seriously impressive!",
+        "10 out of 10! You're not just savvy, you're practically a hormone whisperer. Consider yourself officially educated and empowered!",
+        "Flawless victory! You've officially earned your gold medal in menopause knowledge. Others are still figuring it out, but you? You're already a pro."
+      ],
+      "9/10": [
+        "Wow, 9 out of 10! You're practically an expert. Just one tiny tidbit away from total menopause mastery – you've definitely got this!",
+        "So close to perfection! With a score like that, you're well on your way to demystifying every last menopausal mystery.",
+        "You're nine-tenths of the way to menopause guru status! That's an outstanding score and shows you're seriously clued in."
+      ],
+      "8/10": [
+        "8 out of 10! You're clearly clued in and rocking your menopause knowledge. That's a fantastic score that shows you're taking charge!",
+        "Great job with 8 out of 10! You've got a strong grasp on what's happening. Keep learning, and you'll be unstoppable!",
+        "Eight is great! You've clearly done your homework and are well on your way to navigating menopause with confidence."
+      ],
+      "7/10": [
+        "A solid 7 out of 10! You've got a great foundation. Every answer is a step closer to becoming a menopause guru – keep that curiosity flowing!",
+        "You're definitely on the right track! This quiz is all about uncovering new insights, and you're doing just that. Well done!",
+        "Seven out of ten? That's a strong score! You're building your menopause knowledge nicely, and every bit helps!"
+      ],
+      "6/10": [
+        "Good effort! You're picking up valuable insights, and that's what truly matters. This quiz is just the beginning of your savvy journey.",
+        "Six out of ten is a great start! You're actively learning and expanding your understanding. Keep at it!",
+        "You're building your menopause brainpower one question at a time! Keep that curiosity alive."
+      ],
+      "5 or less/10": [
+        "Thanks for being courageous and taking the quiz! Every question is a new opportunity to learn. The best part? You're already ahead by seeking answers!",
+        "Don't sweat it! Menopause can be a mystery, but now you've got some powerful new knowledge. This is your starting line for understanding your body better.",
+        "No worries! The goal here is to learn something new, and you've definitely done that. Every step counts on this journey to understanding your body."
+      ]
+    };
+
+
     let currentQuestion = 0;
+    let score = 0; // Initialize score to 0
     const quizContainer = document.getElementById("quiz");
 
     function showQuestion(index) {
       const q = quizData[index];
-      let answersContainerHTML = '<div class="answers"></div>'; // Create a container for buttons
-
       quizContainer.innerHTML = `
         <div class="question"><strong>${q.category}:</strong><br>${q.question}</div>
-        ${answersContainerHTML}
+        <div class="answers"></div>
         <div class="feedback" id="feedback"></div>
         <div id="nextBtn"></div>
       `;
@@ -232,27 +276,49 @@
       if (q.type === "boolean") {
         const yesButton = document.createElement("button");
         yesButton.textContent = "Yes";
-        yesButton.onclick = () => handleAnswer(q.correct, 'Yes', q.explanation);
+        yesButton.onclick = (event) => handleAnswer(q.correct, 'Yes', q.explanation, event.target);
         answersDiv.appendChild(yesButton);
 
         const noButton = document.createElement("button");
         noButton.textContent = "No";
-        noButton.onclick = () => handleAnswer(q.correct, 'No', q.explanation);
+        noButton.onclick = (event) => handleAnswer(q.correct, 'No', q.explanation, event.target);
         answersDiv.appendChild(noButton);
       } else {
         q.options.forEach(option => {
           const button = document.createElement("button");
           button.textContent = option;
-          button.onclick = () => handleAnswer(q.correct, option, q.explanation);
+          button.onclick = (event) => handleAnswer(q.correct, option, q.explanation, event.target);
           answersDiv.appendChild(button);
         });
       }
     }
 
-    function handleAnswer(correct, selected, explanation) {
+    function handleAnswer(correct, selected, explanation, clickedButton) {
+      // Get all answer buttons for the current question
+      const answerButtons = quizContainer.querySelectorAll('.answers button');
+
+      // Disable all buttons
+      answerButtons.forEach(button => {
+        button.disabled = true;
+      });
+
       const isCorrect = correct === selected;
       const msgArray = isCorrect ? correctMessages : wrongMessages;
       const feedbackText = isCorrect ? `<strong>Correct.</strong> ${msgArray[Math.floor(Math.random() * msgArray.length)]}` : `<strong>Incorrect.</strong> ${msgArray[Math.floor(Math.random() * msgArray.length)]}`;
+
+      if (isCorrect) {
+        score++; // Increment score if the answer is correct
+        clickedButton.classList.add('correct-answer'); // Add class for styling
+      } else {
+        clickedButton.classList.add('wrong-answer'); // Add class for styling
+        // Optionally, highlight the correct answer if the user was wrong
+        answerButtons.forEach(button => {
+          if (button.textContent === correct) {
+            button.classList.add('correct-answer');
+          }
+        });
+      }
+
       const feedbackDiv = document.getElementById("feedback");
       feedbackDiv.innerHTML = `${feedbackText}<br><br>${explanation}`;
       document.getElementById("nextBtn").innerHTML = '<button class="next-btn" onclick="nextQuestion()">Next Question</button>';
@@ -267,28 +333,79 @@
       }
     }
 
+    function getResultComment(currentScore, totalQuestions) {
+      let category;
+      if (currentScore === totalQuestions) {
+        category = "10/10";
+      } else if (currentScore === totalQuestions - 1) {
+        category = "9/10";
+      } else if (currentScore === totalQuestions - 2) {
+        category = "8/10";
+      } else if (currentScore === totalQuestions - 3) {
+        category = "7/10";
+      } else if (currentScore === totalQuestions - 4) {
+        category = "6/10";
+      } else {
+        category = "5 or less/10";
+      }
+
+      const comments = scoreComments[category];
+      return comments[Math.floor(Math.random() * comments.length)];
+    }
+
+
     function showFinalScreen() {
+      const totalQuestions = quizData.length;
+      const resultComment = getResultComment(score, totalQuestions);
+
       quizContainer.innerHTML = `
         <div class="final-screen">
           <h2>You’ve Completed the Menopause Quiz!</h2>
-          <p>You’re one smart cookie—seriously impressive.<br>
-          Hot flashes love company, so don’t keep this quiz to yourself.</p>
-          <button class="copy-btn" onclick="copyLink()">Click. Copy. Share. Empower another woman.</button>
-          <p id="copiedText" class="copied" style="display:none;">✔️ Link copied to clipboard!</p>
+          <p>Your score: <strong>${score} out of ${totalQuestions}</strong></p>
+          <p>${resultComment}</p>
+          <p>Hot flashes love company, so don’t keep this quiz to yourself.</p>
+          <button class="copy-btn" onclick="shareResults()">Click. Copy. Share. Empower another woman.</button>
+          <p id="copiedText" class="copied" style="display:none;"></p>
         </div>
       `;
     }
 
-    function copyLink() {
+    function shareResults() {
+      const totalQuestions = quizData.length;
+      const shareText = `I just took the Menopause Savvy Quiz and scored ${score} out of ${totalQuestions}! How well do you know menopause? Take the quiz here: https://menohello.github.io/menopause-savvy-quiz/`;
+      const quizUrl = "https://menohello.github.io/menopause-savvy-quiz/"; // **IMPORTANT: Replace with your actual quiz URL**
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'Menopause Savvy Quiz Results!',
+          text: shareText,
+          url: quizUrl
+        })
+        .then(() => {
+          document.getElementById("copiedText").textContent = "✔️ Shared successfully!";
+          document.getElementById("copiedText").style.display = "block";
+        })
+        .catch((error) => {
+          console.error('Error sharing:', error);
+          copyToClipboard(shareText);
+        });
+      } else {
+        copyToClipboard(shareText);
+      }
+    }
+
+    function copyToClipboard(text) {
       const dummy = document.createElement("textarea");
-      dummy.value = "https://www.menohello.com/menopause-resources/menopause-quizzes";
+      dummy.value = text;
       document.body.appendChild(dummy);
       dummy.select();
       document.execCommand("copy");
       document.body.removeChild(dummy);
+      document.getElementById("copiedText").textContent = "✔️ Link and score copied to clipboard!";
       document.getElementById("copiedText").style.display = "block";
     }
 
+    // Initialize the quiz
     showQuestion(currentQuestion);
   </script>
 </body>
