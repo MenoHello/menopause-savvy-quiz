@@ -218,27 +218,35 @@
 
     function showQuestion(index) {
       const q = quizData[index];
-      let answersHTML = "";
-
-      if (q.type === "boolean") {
-        answersHTML = `<div class="answers">
-          <button onclick="handleAnswer('${q.correct}', 'Yes', \"${q.explanation}\")">Yes</button>
-          <button onclick="handleAnswer('${q.correct}', 'No', \"${q.explanation}\")">No</button>
-        </div>`;
-      } else {
-        answersHTML = '<div class="answers">';
-        q.options.forEach(option => {
-          answersHTML += `<button onclick="handleAnswer('${q.correct}', '${option.replace(/'/g, "\\'")}', \"${q.explanation}\")">${option}</button>`;
-        });
-        answersHTML += '</div>';
-      }
+      let answersContainerHTML = '<div class="answers"></div>'; // Create a container for buttons
 
       quizContainer.innerHTML = `
         <div class="question"><strong>${q.category}:</strong><br>${q.question}</div>
-        ${answersHTML}
+        ${answersContainerHTML}
         <div class="feedback" id="feedback"></div>
         <div id="nextBtn"></div>
       `;
+
+      const answersDiv = quizContainer.querySelector(".answers");
+
+      if (q.type === "boolean") {
+        const yesButton = document.createElement("button");
+        yesButton.textContent = "Yes";
+        yesButton.onclick = () => handleAnswer(q.correct, 'Yes', q.explanation);
+        answersDiv.appendChild(yesButton);
+
+        const noButton = document.createElement("button");
+        noButton.textContent = "No";
+        noButton.onclick = () => handleAnswer(q.correct, 'No', q.explanation);
+        answersDiv.appendChild(noButton);
+      } else {
+        q.options.forEach(option => {
+          const button = document.createElement("button");
+          button.textContent = option;
+          button.onclick = () => handleAnswer(q.correct, option, q.explanation);
+          answersDiv.appendChild(button);
+        });
+      }
     }
 
     function handleAnswer(correct, selected, explanation) {
